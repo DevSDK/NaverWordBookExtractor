@@ -44,8 +44,6 @@ def signin():
     "encpw": encrypted_source.hex(), 
     "enctp": 1,
     "encnm": session_keys["keyname"],
-    "svctype": 0,
-    "url": "http://www.naver.com"
     }
     response = session.post("https://nid.naver.com/nidlogin.login", data=postdata)
     
@@ -77,11 +75,16 @@ def parsingData(baseurl):
     if baseurl is None:
         print(target+" is not None")
         exit(0)
+
     data = session.get(baseurl)
     bf = BeautifulSoup(data.text, 'html.parser')
-    pages = bf.find("div", class_ = "pagenavi_c").find_all("a")
+    pagenaiv = bf.find("div", class_ = "pagenavi_c")
+    pages = None
     wordset = {}
     i = 0
+
+    if pagenaiv is not None:
+        pages = pagenaiv.find_all("a")        
 
     while True:
         words = []
@@ -103,7 +106,7 @@ def parsingData(baseurl):
         for j in range(len(words)):
             wordset[words[j]] = means[j]
         i+=1
-        if i > (len(pages)):
+        if i > (pages is not None and len(pages)):
             break
         data = session.get("http://wordbook.naver.com" + pages[i-1]["href"])
         bf = BeautifulSoup(data.text, 'html.parser')
