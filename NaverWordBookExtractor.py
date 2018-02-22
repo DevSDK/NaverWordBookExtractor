@@ -9,7 +9,7 @@ session_keys = {}
 
 #Type the username
 #TODO Move to other files that private information.
-info = { "id" : "  ", "pw" : "" }
+info = { "id" : "", "pw" : "" }
 session = requests.Session()
 session_key_string = ""
 
@@ -71,6 +71,24 @@ def getExtractSet():
             res[title] =  "http://wordbook.naver.com" + a['href']
     return res
 
+def removeUnnecessaryStrings(_str):
+    result = ""
+    c1 = 0
+    c2 = 0
+    for s in _str:
+        if s =='(':
+            c1+=1
+        if s == '[':
+            c2+=1
+        if c1 == 0 and c2 == 0 and s != '|':
+            result += s
+        if s == ')':
+            c1-=1
+        if s == ']':
+            c2-=1
+       
+    return result
+
 def parsingData(baseurl):
     if baseurl is None:
         print(target+" is not None")
@@ -101,10 +119,10 @@ def parsingData(baseurl):
             m = div.find("ol").find_all("li")[0].find("li", class_ = "c_13_a")
             mean = ""
             for ms in m.contents:
-                mean += ms.string + "@"
-            means.append(mean) 
+                mean += ms.string            
+            means.append(removeUnnecessaryStrings(mean)) 
         for j in range(len(words)):
-            print(words[j] + " : " + means[j])
+#            print(words[j] + " : " + means[j])
             wordset[words[j]] = means[j]
         i+=1
         if i > (pages is not None and len(pages)):
