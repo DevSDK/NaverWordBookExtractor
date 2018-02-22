@@ -9,7 +9,7 @@ session_keys = {}
 
 #Type the username
 #TODO Move to other files that private information.
-info = { "id" : "", "pw" : "" }
+info = { "id" : "  ", "pw" : "" }
 session = requests.Session()
 session_key_string = ""
 
@@ -96,14 +96,15 @@ def parsingData(baseurl):
         
         for a in alist:
             word = a.find('span').contents
-            word.reverse()
             words.append(word[0].replace("\t", "").replace("\n", "").replace("   ", ""))
         for div in divlist:
             m = div.find("ol").find_all("li")[0].find("li", class_ = "c_13_a")
-            ms = m.contents
-            ms.reverse()
-            means.append(ms[0].string)
+            mean = ""
+            for ms in m.contents:
+                mean += ms.string + "@"
+            means.append(mean) 
         for j in range(len(words)):
+            print(words[j] + " : " + means[j])
             wordset[words[j]] = means[j]
         i+=1
         if i > (pages is not None and len(pages)):
