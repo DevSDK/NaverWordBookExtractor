@@ -4,6 +4,7 @@ import rsa
 from rsa import common, transform, core
 import re
 import argparse
+import os.path
 
 session_keys = {}
 
@@ -89,7 +90,7 @@ def removeUnnecessaryStrings(_str):
        
     return result
 
-def parsingData(baseurl):
+def parsingData(baseurl, basePosition):
     if baseurl is None:
         print(target+" is not None")
         exit(0)
@@ -100,13 +101,13 @@ def parsingData(baseurl):
     pages = None
     wordset = {}
     i = 0
-
+    
     if pagenaiv is not None:
         pages = pagenaiv.find_all("a")        
 
+    words = []
+    means = []
     while True:
-        words = []
-        means = []
 
         form = bf.find("form", {"name" : "frm"})
         alist = form.find_all("a", class_ = "_miniPage")
@@ -120,21 +121,29 @@ def parsingData(baseurl):
             mean = ""
             for ms in m.contents:
                 mean += ms.string            
-            means.append(removeUnnecessaryStrings(mean)) 
-        for j in range(len(words)):
-#            print(words[j] + " : " + means[j])
-            wordset[words[j]] = means[j]
+            means.append(removeUnnecessaryStrings(mean))
+        
         i+=1
         if i > (pages is not None and len(pages)):
             break
         data = session.get("http://wordbook.naver.com" + pages[i-1]["href"])
         bf = BeautifulSoup(data.text, 'html.parser')
+    
+    pos = 0; 
+    if basePosition is not -1:
+        if basePosition <= len(words):
+            pos = basePosition
+    for j in range(len(words)):
+    #   print(words[j] + " : " + means[j])
+        if j >= pos:
+            wordset[words[j]] = means[j]
     return wordset
 
 parser = argparse.ArgumentParser(description='Naver Wordbook data extractor.')
 parser.add_argument('WordBook', metavar='WORDBOOK',
                    help='extract target word book.')
 parser.add_argument('-o','--out',metavar="FILENAME", help='out put file name.')
+parser.add_argument('-n','--number',metavar="NUMBER", help='Base Position Extract point.')
 
 args = parser.parse_args()
 
@@ -142,11 +151,23 @@ args = parser.parse_args()
 if signin() is False:
     exit(0)
 urlset = getExtractSet()
+
+
+basePosition = -1;
+if args.number is not None:
+    try:
+        basePosition = int(args.number)
+    except ValueError:
+        print("-n option require Integer number")
+
 if(urlset[args.WordBook] is None):
     print(args.WordBook+" is Not existing.")
     exit(0)
-data = parsingData(urlset[args.WordBook])
+data = parsingData(urlset[args.WordBook], basePosition)
 filename = "a.txt"
+   
+
+
 if args.out is not None:
     filename = args.out
 f = open(filename, "w", encoding='utf8')
