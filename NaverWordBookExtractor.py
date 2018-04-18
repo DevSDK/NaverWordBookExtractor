@@ -116,7 +116,10 @@ def parsingData(baseurl, basePosition):
         for a in alist:
             word = a.find('span').contents
             words.append(word[0].replace("\t", "").replace("\n", "").replace("   ", ""))
-        for div in divlist:
+        for div in divlist: 
+            if len(div.find("ol").find_all("li")) <= 0:
+                print("EMPTY MEANING PLEASE CHECK THE VOCABULARY")
+                exit(-1)
             m = div.find("ol").find_all("li")[0].find("li", class_ = "c_13_a")
             mean = ""
             for ms in m.contents:
